@@ -66,5 +66,5 @@
     "explorer.fileNesting.patterns": {
         "*.sln": "*.csproj"
     },
-    "dotnet.defaultSolution": "carrier-game.sln"
+    "dotnet.defaultSolution": "Carrier.sln"
 }
