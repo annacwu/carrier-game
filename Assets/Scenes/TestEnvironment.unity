@@ -275,6 +275,7 @@ MonoBehaviour:
   jumpForce: 10
   gravity: -20
   physicsSystem: {fileID: 540019728}
+  playerHeight: 0.5
 --- !u!114 &16457258
 MonoBehaviour:
   m_ObjectHideFlags: 0
