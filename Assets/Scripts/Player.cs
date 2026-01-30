@@ -11,7 +11,7 @@ public class Player : MonoBehaviour
     public GameObject physicsSystem;
     private Physics physicsScript;
 
-    public float playerHeight; 
+    //public float playerHeight; 
 
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -32,7 +32,7 @@ public class Player : MonoBehaviour
         {
             // Debug.Log("setting velocity to 0");
             Vector2 groundPos = Physics2D.ClosestPoint(transform.position, groundCollider);
-            transform.position = new Vector2(transform.position.x, groundPos.y + (playerHeight / 2));
+            transform.position = new Vector2(transform.position.x, groundPos.y + (transform.localScale.y / 2));
             verticalVelocity = 0.0f;
 
         }
