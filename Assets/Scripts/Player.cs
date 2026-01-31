@@ -42,33 +42,77 @@ public class Player : MonoBehaviour
             jumpSaved = false;
         }
 
+        //if there is a 'saved' jump, execute it
+        Collider2D groundCollider = physicsScript.Grounded(transform, transform.position, transform.localScale, 0);
+        if (jumpSaved && groundCollider)
+        {
+            jumpSaved = false;
+            tick = 0;
+            verticalVelocity += jumpForce;
+        }
+
         verticalVelocity += gravity * Time.deltaTime;
         
         //calculated distance object will move in next frame
         Vector2 prelimTravel = new Vector2(horizontalVelocity * Time.deltaTime, verticalVelocity * Time.deltaTime);
-        Vector2 hitLoc = physicsScript.VerticalImpact(transform, prelimTravel, numRays); //gets point of potential impact
+        string impact;
+        Vector2 hitLoc = physicsScript.Impact(transform, prelimTravel, numRays, out impact); //gets point of potential impact
 
+        Vector2 oldPos = transform.position;
+        Vector2 snapTravel; //distance that (if we hit something) was travelled
         //Collider2D groundCollider = physicsScript.Grounded(transform, transform.position, transform.localScale, 0);
         
-        if (hitLoc != Vector2.zero && verticalVelocity <= 0)
+        if (impact != "none")
         {
+            
             // Debug.Log("setting velocity to 0");
             //Vector2 groundPos = Physics2D.ClosestPoint(transform.position, groundCollider);
-            transform.position = new Vector2(hitLoc.x, hitLoc.y + (transform.localScale.y / 2));
-            verticalVelocity = 0.0f;
+            //transform.position = new Vector2(hitLoc.x, hitLoc.y + (transform.localScale.y / 2));
+            snapTravel = hitLoc - oldPos; //calculate distance of snap
 
-            //if there is a 'saved' jump, execute it
-            if (jumpSaved)
+            transform.position = hitLoc; //make snap
+
+            float remainingVertical = prelimTravel.y - snapTravel.y;
+            float remainingHorizontal = prelimTravel.y - snapTravel.y; 
+            Vector2 remainingTravel = new Vector2(remainingHorizontal, remainingVertical); //calculate remaining distance you would have moved if not for the snap
+
+            Vector2 secondHitLoc;
+            string secondImpact;
+
+            if (impact == "horizontal")
             {
-                jumpSaved = false;
-                tick = 0;
-                verticalVelocity += jumpForce;
+                horizontalVelocity = 0.0f;
+                //float remainingVertical = prelimTravel.y - snapTravel.y;
+                remainingTravel.x = 0; //if we made a horizontal impact, we should not travel any more on that axis
+                secondHitLoc = physicsScript.Impact(transform, new Vector2(0, remainingVertical), numRays, out secondImpact);
+
+            } else
+            {
+                verticalVelocity = 0.0f;
+                //float remainingHorizontal = prelimTravel.x - snapTravel.x;
+                remainingTravel.y = 0;
+                secondHitLoc =  physicsScript.Impact(transform, new Vector2(remainingHorizontal, 0), numRays, out secondImpact);
             }
 
+            //if there was a second impact, we can safely set all velocity to 0, since we know we hit colliders in both directions of travel
+            if (secondImpact != "none")
+            {
+                transform.position = secondHitLoc; //add new snap travel
+                verticalVelocity = 0;
+                horizontalVelocity = 0;
+                remainingTravel = Vector2.zero; //set all velocity things to 0
+            }
+            
+            //move only in direction where we didn't initially make impact
+            transform.Translate(remainingTravel);
+
+        } else
+        {
+            transform.Translate(new Vector2(horizontalVelocity, verticalVelocity) * Time.deltaTime); //if no impact, move as normal
         }
 
         // Debug.Log("updating velocity");
-        transform.Translate(new Vector2(0, verticalVelocity) * Time.deltaTime);
+
 
     }
 
