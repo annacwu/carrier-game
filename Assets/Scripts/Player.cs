@@ -19,8 +19,6 @@ public class Player : MonoBehaviour
     public GameObject physicsSystem;
     private Physics physicsScript;
 
-    //public float playerHeight; 
-
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
