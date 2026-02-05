@@ -41,7 +41,7 @@ public class Player : MonoBehaviour
         }
 
         //if there is a 'saved' jump, execute it
-        Collider2D groundCollider = physicsScript.Grounded(transform, transform.position, transform.localScale, 0);
+        Collider2D groundCollider = physicsScript.Grounded(transform.position, transform.localScale, 0);
         if (jumpSaved && groundCollider)
         {
             jumpSaved = false;
@@ -127,7 +127,7 @@ public class Player : MonoBehaviour
 
         } else
         {
-            if (physicsScript.Grounded(transform, transform.position, transform.localScale, 0))
+            if (physicsScript.Grounded(transform.position, transform.localScale, 0))
             {
                 verticalVelocity += jumpForce;
             }

@@ -27,7 +27,7 @@ public class Physics : MonoBehaviour
     }
     
     //returns collider that OverlapBox hits
-    public Collider2D Grounded (Transform objTransform, Vector2 boxPoint, Vector2 boxSize, float boxAngle)
+    public Collider2D Grounded (Vector2 boxPoint, Vector2 boxSize, float boxAngle)
     {   
 
         if (Physics2D.OverlapBox(boxPoint, boxSize, boxAngle, ContactFilter2D.noFilter, results) > 0)
@@ -73,13 +73,10 @@ public class Physics : MonoBehaviour
             //check for horizontal collisions
             if (objVelocity.x != 0) //there is horizontal movement
             {
-                int side = 1; //if going right, this will be positive
-                if (objVelocity.x < 0)
-                {
-                    side = -1;
-                }
+                //if going right, this will be positive
+                int side = objVelocity.x < 0 ? -1 : 1;
 
-                float vertOffset = -(height / 2.0f) + (height / numRays * i); //position of bottom edge of the player
+                float vertOffset = -(height / 2.0f) + (height / (numRays-1) * i); //position of bottom edge of the player
                 Vector2 vertOrigin =  new Vector2(objTransform.position.x + (width / 2.0f * side), objTransform.position.y + vertOffset); //origin of each ray
                 RaycastHit2D horizontalHit = Physics2D.Raycast(vertOrigin, objVelocity.normalized, maxDist);
 
@@ -104,14 +101,10 @@ public class Physics : MonoBehaviour
             if (objVelocity.y != 0)
             {
 
-                int vert = 1; //if moving up, this will be positive
-                if (objVelocity.y < 0)
-                {
-                    vert = -1;
-                }
+                int vert = objVelocity.y < 0 ? -1 : 1;
                 
                 //Debug.Log("creating rays!");
-                float horizontalOffset = -(width / 2.0f) + (width / numRays * i);
+                float horizontalOffset = -(width / 2.0f) + (width / (numRays-1) * i);
                 //where each ray should start - basically, start at left corner of box and then move right in increments based on numRays
                 Vector2 origin =  new Vector2(objTransform.position.x + horizontalOffset, objTransform.position.y + (height / 2.0f * vert));
 
