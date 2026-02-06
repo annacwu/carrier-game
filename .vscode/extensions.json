@@ -1,5 +1,7 @@
 {
     "recommendations": [
-      "visualstudiotoolsforunity.vstuc"
+      "visualstudiotoolsforunity.vstuc",
+      "csharpier.csharpier-vscode",
+      "editorconfig.editorconfig"
     ]
 }
