@@ -40,6 +40,7 @@ public class Physics : MonoBehaviour
 
     }
 
+    /*
     //sends rays out from object based on velocity to see whether it will hit anything this frame
     //returns coordinate of impact point (i.e. where the player should snap to)
     //if you do get an impact, you need to call this function one more time to ensure there isn't a second impact in the same frame
@@ -48,12 +49,10 @@ public class Physics : MonoBehaviour
     //objTransform: transform of the object which is checking if it is gonna hit anything else (for now, the player's transform)
     //objVelocity: the velocity of said object
     //numRays: the # of rays sent out from each side of the object (e.g. a value of '3' will send out a maxiumum of 3 rays from the horizontal edge and 3 from the vertical edge)
-    //out string direction: returns which axis Impact() detected a collision on ("horizontal", "vertical", or "none")
+    out string direction: returns which axis Impact() detected a collision on ("horizontal", "vertical", or "none")
+    */
     public Vector2 Impact (Transform objTransform, Vector2 objVelocity, int numRays, out string direction)
     {
-        //length of the ray
-        float maxDist = objVelocity.magnitude;
-        //Debug.Log("max distance is " + maxDist);
 
         //distance that closest collider is to the player
         float minDist = Mathf.Infinity;
@@ -71,58 +70,28 @@ public class Physics : MonoBehaviour
         {   
 
             //check for horizontal collisions
-            if (objVelocity.x != 0) //there is horizontal movement
+            var (horizontalHit, side, vertOffset) = CheckAxis(0, objVelocity, objTransform, i, height, width, numRays);
+
+            if (horizontalHit)
             {
-                //if going right, this will be positive
-                int side = objVelocity.x < 0 ? -1 : 1;
-
-                float vertOffset = -(height / 2.0f) + (height / (numRays-1) * i); //position of bottom edge of the player
-                Vector2 vertOrigin =  new Vector2(objTransform.position.x + (width / 2.0f * side), objTransform.position.y + vertOffset); //origin of each ray
-                RaycastHit2D horizontalHit = Physics2D.Raycast(vertOrigin, objVelocity.normalized, maxDist);
-
-                if (horizontalHit)
-                {
-                    if (minDist > horizontalHit.distance)
-                    {
-                        minDist = horizontalHit.distance;
-                        //get point where that ray intersected with a collider
-                        Vector2 horizontalHitPoint = horizontalHit.point;
-                        float newY = horizontalHitPoint.y - vertOffset;
-                        //return point where player should snap to (adjusted for initial vertical offest of ray that was sent out)
-                        
-                        returnVector = new Vector2(horizontalHitPoint.x - (width / 2 * side), newY);
-                        direction = "horizontal";
-                    }
+                var (newReturn, newMin, updated) = CalculateHit(0, horizontalHit, side, vertOffset, minDist, height, width);
+                if (updated) {
+                    returnVector = newReturn;
+                    minDist = newMin;
+                    direction = "horizontal";
                 }
-
             }
-            
+
             //check for vertical collisions
-            if (objVelocity.y != 0)
+            var (verticalHit, vert, horizontalOffset) = CheckAxis(1, objVelocity, objTransform, i, height, width, numRays);
+
+            if (verticalHit)
             {
-
-                int vert = objVelocity.y < 0 ? -1 : 1;
-                
-                //Debug.Log("creating rays!");
-                float horizontalOffset = -(width / 2.0f) + (width / (numRays-1) * i);
-                //where each ray should start - basically, start at left corner of box and then move right in increments based on numRays
-                Vector2 origin =  new Vector2(objTransform.position.x + horizontalOffset, objTransform.position.y + (height / 2.0f * vert));
-
-                //currently no layerMask bc we haven't implemented that, but seems to be an int - so colliders would have to be on different layers?
-                RaycastHit2D hit = Physics2D.Raycast(origin, objVelocity.normalized, maxDist);
-                
-                //if we hit something, if it is the closest thing so far, we should return it
-                if (hit)
-                {
-                    if (minDist > hit.distance)
-                    {
-                        minDist = hit.distance;
-                        //get point where that ray intersected with a collider
-                        Vector2 hitPoint = hit.point;
-                        float newX = hitPoint.x - horizontalOffset;
-                        returnVector = new Vector2(newX, hitPoint.y - (height / 2 * vert));
-                        direction = "vertical";
-                    }
+                var (newReturn, newMin, updated) = CalculateHit(1, verticalHit, vert, horizontalOffset, minDist, height, width);
+                if (updated) {
+                    returnVector = newReturn;
+                    minDist = newMin;
+                    direction = "vertical";
                 }
             }
 
@@ -130,6 +99,47 @@ public class Physics : MonoBehaviour
         
         return returnVector;
     }
+    
 
+    // 0 for horizontal, 1 for vertical
+    private (RaycastHit2D hit, int dir, float offset) CheckAxis(int axis, Vector2 objVelocity, Transform objTransform, int i, float height, float width, int numRays)
+    {
+        if (objVelocity[axis] != 0)
+        {
+            float maxDist = objVelocity.magnitude;
+            // get direction (up/down, left/right)
+            int dir = objVelocity[axis] < 0 ? -1 : 1; 
+            // for x, the size of the player on the axis in the direction we are moving is the width. 
+            float movementSize = axis == 0 ? width : height;
+            // size of the player on the axis the rays will be spread
+            float spreadSize = axis == 0 ? height : width;
 
+            float offset = -(spreadSize / 2.0f) + (spreadSize / (numRays-1) * i);
+
+            // calculate origin
+            Vector2 origin = Vector2.zero; // initialize empty
+            origin[axis] = objTransform.position[axis] + (movementSize / 2.0f * dir);
+            origin[1 - axis] = objTransform.position[1 - axis] + offset;
+
+            RaycastHit2D hit = Physics2D.Raycast(origin, objVelocity.normalized, maxDist);
+            return (hit, dir, offset);
+        }
+        return (default, 0, 0);
+    }
+
+    // 0 for horizontal, 1 for vertical
+    private (Vector2 collision, float minDist, bool updated) CalculateHit (int axis, RaycastHit2D hit, int dir, float offset, float currentMin, float height, float width)
+    {
+        if (currentMin > hit.distance) {
+            //get point where that ray intersected with a collider
+            Vector2 hitPoint = hit.point;
+            float otherCoord = hitPoint[1 - axis] - offset;
+            Vector2 returnVector = axis == 0 ?
+                new Vector2(hitPoint[axis] - (width / 2 * dir), otherCoord) :
+                new Vector2(otherCoord, hitPoint[axis] - (height / 2 * dir));
+
+            return (returnVector, hit.distance, true);
+        }
+        return (default, currentMin, false);
+    }   
 }
