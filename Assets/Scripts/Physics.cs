@@ -2,6 +2,13 @@ using Unity.Collections;
 using Unity.VisualScripting;
 using UnityEngine;
 
+public enum CollisionDirection
+{
+    None, 
+    Horizontal, 
+    Vertical
+}
+
 public class Physics : MonoBehaviour
 {
     // Array that stores colliders the box comes into contact with
@@ -51,7 +58,7 @@ public class Physics : MonoBehaviour
         Transform objTransform,
         Vector2 objVelocity,
         int numRays,
-        out string direction
+        out CollisionDirection direction
     )
     {
         // Distance that the closest collider is to the player
@@ -63,7 +70,7 @@ public class Physics : MonoBehaviour
         float height = objTransform.localScale.y - rayOffset * 2;
         float width = objTransform.localScale.x - rayOffset * 2;
 
-        direction = "none";
+        direction = CollisionDirection.None;
 
         for (int i = 0; i < numRays; i++)
         {
@@ -93,7 +100,7 @@ public class Physics : MonoBehaviour
                 {
                     returnVector = newReturn;
                     minDist = newMin;
-                    direction = "horizontal";
+                    direction = CollisionDirection.Horizontal;
                 }
             }
 
@@ -123,7 +130,7 @@ public class Physics : MonoBehaviour
                 {
                     returnVector = newReturn;
                     minDist = newMin;
-                    direction = "vertical";
+                    direction = CollisionDirection.Vertical;
                 }
             }
         }
@@ -165,7 +172,7 @@ public class Physics : MonoBehaviour
             origin[axis] = objTransform.position[axis] + (movementSize / 2.0f * dir);
             origin[1 - axis] = objTransform.position[1 - axis] + offset;
 
-            RaycastHit2D hit = Physics2D.Raycast(origin, objVelocity.normalized, maxDist);
+            RaycastHit2D hit = Physics2D.Raycast(origin, objVelocity, maxDist);
             return (hit, dir, offset);
         }
 
