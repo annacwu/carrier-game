@@ -1,0 +1,17 @@
+#!/bin/sh
+
+# Run CSharpier on staged .cs files
+STAGED_CS=$(git diff --cached --name-only --diff-filter=ACM | grep '\.cs$')
+
+if [ -z "$STAGED_CS" ]; then
+    exit 0
+fi
+
+echo "Running CSharpier check on staged files..."
+echo "$STAGED_CS" | xargs dotnet csharpier check
+
+if [ $? -ne 0 ]; then
+    echo ""
+    echo "CSharpier found unformatted files. Run 'dotnet csharpier format .' to fix."
+    exit 1
+fi
