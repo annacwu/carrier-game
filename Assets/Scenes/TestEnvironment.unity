@@ -273,7 +273,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: '::'
   jumpForce: 10
+  numRays: 3
   gravity: -20
+  useForgivingJumps: 0
+  forgivenessFactor: 1
   physicsSystem: {fileID: 540019728}
   playerHeight: 0.5
 --- !u!114 &16457258
