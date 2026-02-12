@@ -19,6 +19,14 @@ public class Physics : MonoBehaviour
     // Makes effective 'collider' smaller, needs to be synced up with smaller Grounded() box (NOT CURRENTLY IMPLEMENTED).
     public float rayOffset = 0.01f;
 
+    Collider2D[] results; //array that stores colliders the box comes into contact with
+    
+    //filter for filtering out types of colliders that player can come into contact with
+    //can use to, for example, filter obstacle vs wall colliders for different behaviors 
+    //(currently just ignored, as no colliders have a filter yet)
+    //ContactFilter2D filter; 
+
+
     public float distanceToCheck = 0.25f;
 
     void Start()
