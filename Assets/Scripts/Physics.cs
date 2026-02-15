@@ -71,9 +71,13 @@ public class Physics : MonoBehaviour
         // Returns a zero vector if there is no result
         Vector2 returnVector = Vector2.zero;
 
-        // Get height and width beforehand for readability (corrected for rayOffset)
-        float height = objTransform.localScale.y - rayOffset * 2;
-        float width = objTransform.localScale.x - rayOffset * 2;
+        // Ray-offset dimensions for ray origins
+        float rayHeight = objTransform.localScale.y - rayOffset * 2;
+        float rayWidth = objTransform.localScale.x - rayOffset * 2;
+
+        // Actual dimensions for snap position calculation
+        float playerHeight = objTransform.localScale.y;
+        float playerWidth = objTransform.localScale.x;
 
         direction = CollisionDirection.None;
 
@@ -85,8 +89,8 @@ public class Physics : MonoBehaviour
                 objVelocity,
                 objTransform,
                 i,
-                height,
-                width,
+                rayHeight,
+                rayWidth,
                 numRays
             );
 
@@ -98,8 +102,8 @@ public class Physics : MonoBehaviour
                     side,
                     vertOffset,
                     minDist,
-                    height,
-                    width
+                    playerHeight,
+                    playerWidth
                 );
                 if (updated)
                 {
@@ -115,8 +119,8 @@ public class Physics : MonoBehaviour
                 objVelocity,
                 objTransform,
                 i,
-                height,
-                width,
+                rayHeight,
+                rayWidth,
                 numRays
             );
 
@@ -128,8 +132,8 @@ public class Physics : MonoBehaviour
                     vert,
                     horizontalOffset,
                     minDist,
-                    height,
-                    width
+                    playerHeight,
+                    playerWidth
                 );
                 if (updated)
                 {

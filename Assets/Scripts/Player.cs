@@ -5,7 +5,7 @@ using UnityEngine.InputSystem;
 public class Player : MonoBehaviour
 {
     public float jumpForce;
-    public float moveSpeed = 5;
+    public float moveSpeed;
     public int numRays;
     public float gravity = -9.81f;
     public bool useForgivingJumps = false;
@@ -29,14 +29,9 @@ public class Player : MonoBehaviour
 
     void Update()
     {
+        horizontalVelocity = moveVal.x * moveSpeed;
         HandleForgivingJumps();
         ApplyGravityAndMove();
-        HandleMovement();
-    }
-
-    void HandleMovement()
-    {
-        transform.Translate(new Vector3(moveVal.x, moveVal.y, 0) * moveSpeed * Time.deltaTime);
     }
 
     void HandleForgivingJumps()
@@ -96,7 +91,7 @@ public class Player : MonoBehaviour
         transform.position = hitLoc; //make snap
 
         float remainingVertical = prelimTravel.y - snapTravel.y;
-        float remainingHorizontal = prelimTravel.y - snapTravel.y;
+        float remainingHorizontal = prelimTravel.x - snapTravel.x;
         Vector2 remainingTravel = new Vector2(remainingHorizontal, remainingVertical); //calculate remaining distance you would have moved if not for the snap
 
         Vector2 secondHitLoc;
