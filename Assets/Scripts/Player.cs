@@ -4,33 +4,32 @@ using UnityEngine.InputSystem;
 
 public class Player : MonoBehaviour
 {
-
     public float jumpForce;
-    public int numRays; 
+    public float moveSpeed;
+    public int numRays;
     public float gravity = -9.81f;
     public bool useForgivingJumps = false;
     public int forgivenessFactor = 1; //determines how many frames before hitting the ground u can press jump
-
     private bool jumpSaved = false;
+    public Vector2 moveVal;
     private int tick = 0;
 
     private float verticalVelocity; //stores vertical velocity
-    private float horizontalVelocity = 0; //stores horizontal velocity - currently set to 0 since we don't have that, BUT MAKE SURE TO USE THIS VARIABLE ONCE WE DO!!
+    private float horizontalVelocity; //stores horizontal velocity - currently set to 0 since we don't have that, BUT MAKE SURE TO USE THIS VARIABLE ONCE WE DO!!
     public GameObject physicsSystem;
     private Physics physicsScript;
 
-    //public float playerHeight; 
-
+    //public float playerHeight;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         physicsScript = physicsSystem.GetComponent<Physics>();
-
     }
 
     void Update()
     {
+        horizontalVelocity = moveVal.x * moveSpeed;
         HandleForgivingJumps();
         ApplyGravityAndMove();
     }
@@ -41,14 +40,19 @@ public class Player : MonoBehaviour
         if (jumpSaved && tick <= forgivenessFactor)
         {
             tick += 1;
-        } else if (jumpSaved)
+        }
+        else if (jumpSaved)
         {
             tick = 0;
             jumpSaved = false;
         }
 
         //if there is a 'saved' jump, execute it
-        Collider2D groundCollider = physicsScript.Grounded(transform.position, transform.localScale, 0);
+        Collider2D groundCollider = physicsScript.Grounded(
+            transform.position,
+            transform.localScale,
+            0
+        );
         if (jumpSaved && groundCollider)
         {
             jumpSaved = false;
@@ -62,14 +66,18 @@ public class Player : MonoBehaviour
         verticalVelocity += gravity * Time.deltaTime;
 
         //calculated distance object will move in next frame
-        Vector2 prelimTravel = new Vector2(horizontalVelocity * Time.deltaTime, verticalVelocity * Time.deltaTime);
+        Vector2 prelimTravel = new Vector2(
+            horizontalVelocity * Time.deltaTime,
+            verticalVelocity * Time.deltaTime
+        );
         CollisionDirection impact;
         Vector2 hitLoc = physicsScript.Impact(transform, prelimTravel, numRays, out impact); // gets point of potential impact
 
         if (impact != CollisionDirection.None)
         {
             ResolveCollision(prelimTravel, hitLoc, impact);
-        } else
+        }
+        else
         {
             transform.Translate(new Vector2(horizontalVelocity, verticalVelocity) * Time.deltaTime); //if no impact, move as normal
         }
@@ -83,7 +91,7 @@ public class Player : MonoBehaviour
         transform.position = hitLoc; //make snap
 
         float remainingVertical = prelimTravel.y - snapTravel.y;
-        float remainingHorizontal = prelimTravel.y - snapTravel.y;
+        float remainingHorizontal = prelimTravel.x - snapTravel.x;
         Vector2 remainingTravel = new Vector2(remainingHorizontal, remainingVertical); //calculate remaining distance you would have moved if not for the snap
 
         Vector2 secondHitLoc;
@@ -93,12 +101,23 @@ public class Player : MonoBehaviour
         {
             horizontalVelocity = 0.0f;
             remainingTravel.x = 0; //if we made a horizontal impact, we should not travel any more on that axis
-            secondHitLoc = physicsScript.Impact(transform, new Vector2(0, remainingVertical), numRays, out secondImpact);
-        } else
+            secondHitLoc = physicsScript.Impact(
+                transform,
+                new Vector2(0, remainingVertical),
+                numRays,
+                out secondImpact
+            );
+        }
+        else
         {
             verticalVelocity = 0.0f;
             remainingTravel.y = 0;
-            secondHitLoc = physicsScript.Impact(transform, new Vector2(remainingHorizontal, 0), numRays, out secondImpact);
+            secondHitLoc = physicsScript.Impact(
+                transform,
+                new Vector2(remainingHorizontal, 0),
+                numRays,
+                out secondImpact
+            );
         }
 
         //if there was a second impact, we can safely set all velocity to 0, since we know we hit colliders in both directions of travel
@@ -117,21 +136,26 @@ public class Player : MonoBehaviour
     //onJump still uses Grounded since we want u to be currently on the floor and not just about to hit it
     //but doesn't need to, especially if we want to do something like forgiving jumps
     //(i added a toggle to test this)
-    void OnJump ()
+    void OnJump()
     {
         //if player presses jump button and they are currently in the air, 'save' their input for a few frames (based on forgiveness factor)
         //if they end up on the ground in any of those frames, "forgive" their jump (i.e. execute it)
         if (useForgivingJumps)
         {
             jumpSaved = true;
-
-        } else
+        }
+        else
         {
             if (physicsScript.Grounded(transform.position, transform.localScale, 0))
             {
                 verticalVelocity += jumpForce;
             }
         }
+    }
 
+    void OnMove(InputValue val)
+    {
+        moveVal = val.Get<Vector2>();
+        Debug.Log("OnMove called: " + moveVal);
     }
 }

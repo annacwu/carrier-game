@@ -4,9 +4,9 @@ using UnityEngine;
 
 public enum CollisionDirection
 {
-    None, 
-    Horizontal, 
-    Vertical
+    None,
+    Horizontal,
+    Vertical,
 }
 
 public class Physics : MonoBehaviour
@@ -19,13 +19,10 @@ public class Physics : MonoBehaviour
     // Makes effective 'collider' smaller, needs to be synced up with smaller Grounded() box (NOT CURRENTLY IMPLEMENTED).
     public float rayOffset = 0.01f;
 
-    Collider2D[] results; //array that stores colliders the box comes into contact with
-    
     //filter for filtering out types of colliders that player can come into contact with
-    //can use to, for example, filter obstacle vs wall colliders for different behaviors 
+    //can use to, for example, filter obstacle vs wall colliders for different behaviors
     //(currently just ignored, as no colliders have a filter yet)
-    //ContactFilter2D filter; 
-
+    //ContactFilter2D filter;
 
     public float distanceToCheck = 0.25f;
 
@@ -74,9 +71,13 @@ public class Physics : MonoBehaviour
         // Returns a zero vector if there is no result
         Vector2 returnVector = Vector2.zero;
 
-        // Get height and width beforehand for readability (corrected for rayOffset)
-        float height = objTransform.localScale.y - rayOffset * 2;
-        float width = objTransform.localScale.x - rayOffset * 2;
+        // Ray-offset dimensions for ray origins
+        float rayHeight = objTransform.localScale.y - rayOffset * 2;
+        float rayWidth = objTransform.localScale.x - rayOffset * 2;
+
+        // Actual dimensions for snap position calculation
+        float playerHeight = objTransform.localScale.y;
+        float playerWidth = objTransform.localScale.x;
 
         direction = CollisionDirection.None;
 
@@ -88,8 +89,8 @@ public class Physics : MonoBehaviour
                 objVelocity,
                 objTransform,
                 i,
-                height,
-                width,
+                rayHeight,
+                rayWidth,
                 numRays
             );
 
@@ -101,8 +102,8 @@ public class Physics : MonoBehaviour
                     side,
                     vertOffset,
                     minDist,
-                    height,
-                    width
+                    playerHeight,
+                    playerWidth
                 );
                 if (updated)
                 {
@@ -118,8 +119,8 @@ public class Physics : MonoBehaviour
                 objVelocity,
                 objTransform,
                 i,
-                height,
-                width,
+                rayHeight,
+                rayWidth,
                 numRays
             );
 
@@ -131,8 +132,8 @@ public class Physics : MonoBehaviour
                     vert,
                     horizontalOffset,
                     minDist,
-                    height,
-                    width
+                    playerHeight,
+                    playerWidth
                 );
                 if (updated)
                 {
